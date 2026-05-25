@@ -30,6 +30,46 @@ def buscar_regras(rulings_uri):
 		return []
 
 
+def buscar_impressoes(prints_search_uri):
+	headers = {
+		"User-Agent": "mtg-cli-app/1.0"
+	}
+
+	try:
+		response = requests.get(
+			prints_search_uri,
+			headers=headers,
+			timeout=10
+		)
+
+		if response.status_code != 200:
+			return []
+
+		data = response.json()
+
+		return data.get("data", [])
+
+	except requests.RequestException:
+		return []
+
+
+def mostrar_impressoes(impressoes):
+	print("\nColeções:")
+
+	sets_exibidos = set()
+
+	for carta in impressoes:
+		set_name = carta.get("set_name")
+		set_code = carta.get("set")
+
+		chave = (set_name, set_code)
+
+		if chave not in sets_exibidos:
+			print(f" - {set_name} ({set_code.upper()})")
+			sets_exibidos.add(chave)
+
+
+
 def mostrar_formatos(legalities):
 	print("\nFormatos válidos:")
 
@@ -85,7 +125,12 @@ def buscar_carta(nome_carta):
 		print(f"Custo de Mana: {carta.get('mana_cost')}")
 		print(f"Tipo: {carta.get('type_line')}")
 		print(f"Raridade: {carta.get('rarity')}")
-		print(f"Coleção: {carta.get('set_name')}")
+
+		prints_search_uri = carta.get("prints_search_uri")
+
+		if prints_search_uri:
+			impressoes = buscar_impressoes(prints_search_uri)
+			mostrar_impressoes(impressoes)
 		
 		oracle_text = carta.get("oracle_text")
 
