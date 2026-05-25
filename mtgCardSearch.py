@@ -87,11 +87,11 @@ def buscar_carta(nome_carta):
 		print(f"Raridade: {carta.get('rarity')}")
 		print(f"Coleção: {carta.get('set_name')}")
 		
-		oracle_text = carta.get("oracle_get")
+		oracle_text = carta.get("oracle_text")
 
 		if oracle_text:
 			print("\nDescrição:")
-			print(oracle_get)
+			print(oracle_text)
 
 		poder = carta.get("power")
 		resistencia = carta.get("toughness")
