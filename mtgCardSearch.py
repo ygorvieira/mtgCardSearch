@@ -1,4 +1,4 @@
-#!/usr/bin/env pyython3
+#!/usr/bin/env python3
 
 import sys
 import requests
@@ -69,7 +69,6 @@ def mostrar_impressoes(impressoes):
 			sets_exibidos.add(chave)
 
 
-
 def mostrar_formatos(legalities):
 	print("\nFormatos válidos:")
 
@@ -92,7 +91,7 @@ def mostrar_regras(rulings):
 		return
 
 	for ruling in rulings[:5]:
-		published_at = ruling.get("publihed_at", "N/A")
+		published_at = ruling.get("published_at", "N/A")
 		comment = ruling.get("comment", "")
 
 		print(f"\n[{published_at}]")
@@ -120,8 +119,26 @@ def buscar_carta(nome_carta):
 
 		carta = response.json()
 
+		oracle_id = carta.get("oracle_id")
+		pt_carta = None
+		if oracle_id:
+			pt_search_uri = f"https://api.scryfall.com/cards/search?q=oracle_id%3A{oracle_id}+lang%3Apt&unique=cards"
+			try:
+				pt_resp = requests.get(pt_search_uri, headers=headers, timeout=10)
+				if pt_resp.status_code == 200:
+					pt_data = pt_resp.json()
+					if pt_data.get("total_cards", 0) > 0:
+						pt_card = pt_data["data"][0]
+						if pt_card.get("lang") == "pt":
+							pt_carta = pt_card
+			except requests.RequestException:
+				pass
+
+		nome = (pt_carta.get("printed_name") or pt_carta.get("name")) if pt_carta else carta.get("name")
+		descricao = (pt_carta.get("printed_text") or pt_carta.get("oracle_text")) if pt_carta else carta.get("oracle_text")
+
 		print("=" * 60)
-		print(f"Nome: {carta.get('name')}")
+		print(f"Nome: {nome}")
 		print(f"Custo de Mana: {carta.get('mana_cost')}")
 		print(f"Tipo: {carta.get('type_line')}")
 		print(f"Raridade: {carta.get('rarity')}")
@@ -132,11 +149,9 @@ def buscar_carta(nome_carta):
 			impressoes = buscar_impressoes(prints_search_uri)
 			mostrar_impressoes(impressoes)
 		
-		oracle_text = carta.get("oracle_text")
-
-		if oracle_text:
+		if descricao:
 			print("\nDescrição:")
-			print(oracle_text)
+			print(descricao)
 
 		poder = carta.get("power")
 		resistencia = carta.get("toughness")
@@ -155,7 +170,6 @@ def buscar_carta(nome_carta):
 
 		print("\n" + "=" * 60)
 
-	
 	except requests.RequestException as e:
 		print(f"Erro ao acessar API: {e}")
 
@@ -171,93 +185,4 @@ def main():
 
 
 if __name__ == "__main__":
-	main()	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	main()
